@@ -49,7 +49,6 @@ class ImageLocalizer(Node):
             self.get_logger().info(f"New object detected: {id}")
             self.get_logger().info(f"Object position in image: ({object_info['dx']}, {object_info['dy']})")
             self.rotate_to_center_object(object_info)
-            # self.mark_object(msg)
 
     def object_available_to_mark(self, object_id):
         if id == -1:
@@ -67,13 +66,15 @@ class ImageLocalizer(Node):
 
         twist_msg = Twist()
         if abs(error_x) > 5:  
-            twist_msg.angular.z = k * error_x  
+            # make sure speed is not too high and not too low, between 3 and 0.1
+            twist_msg.angular.z = k * error_x
         else:
             twist_msg.angular.z = 0.0  
 
         self.publisher.publish(twist_msg)
         if twist_msg.angular.z == 0.0:
-            self.align_complete = True  
+            self.align_complete = True
+            # self.mark_object()
         else:
             self.align_complete = False
 
