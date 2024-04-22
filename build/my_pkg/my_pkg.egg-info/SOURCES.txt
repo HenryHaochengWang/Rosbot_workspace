@@ -8,7 +8,10 @@ setup.py
 ../../build/my_pkg/my_pkg.egg-info/requires.txt
 ../../build/my_pkg/my_pkg.egg-info/top_level.txt
 ../../build/my_pkg/my_pkg.egg-info/zip-safe
+launch/my_pkg.launch.py
 my_pkg/__init__.py
+my_pkg/image_localizer.py
+my_pkg/marker_lib.py
 my_pkg/rotate_robot.py
 my_pkg.egg-info/PKG-INFO
 my_pkg.egg-info/SOURCES.txt

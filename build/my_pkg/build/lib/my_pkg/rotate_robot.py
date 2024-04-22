@@ -30,7 +30,7 @@ class RobotRotator(Node):
             self.publisher_.publish(move_cmd)
         else:
             move_cmd = Twist()
-            move_cmd.angular.z = 0
+            move_cmd.angular.z = 0.0
             self.publisher_.publish(move_cmd)
             self.timer.cancel()
             
@@ -38,7 +38,7 @@ class RobotRotator(Node):
 def main(args=None):
     rclpy.init(args=args)
     rotator = RobotRotator()
-    rotator.rotate(math.radians(90), 0.5)
+    rotator.rotate(90, 1)
     rclpy.spin(rotator)
     rotator.destroy_node()
     rclpy.shutdown()

@@ -7,7 +7,7 @@ from find_object_2d.msg import ObjectsStamped
 
 
 markers = {
-    1: "start",
+    # 1: "start",
     7: "radioactive",
     11: "explosives",
     21: "flammable",
@@ -20,7 +20,6 @@ markers = {
     61: "posion",
     62: "inhalation hazards"
 }
-
 
 
 class ImageLocalizer(Node):
@@ -37,37 +36,61 @@ class ImageLocalizer(Node):
         self.marked_objects = {}
 
     def object_callback(self, msg):
-        if not self.object_available_to_mark(msg.id):
-            self.get_logger().info(f"New object detected: {msg.id}")
-            self.rotate_to_center_object(msg)
-            self.mark_object(msg)
+        id = -1
+        if len(msg.objects.data) > 0:
+            id = msg.objects.data[0]
+            object_info = {
+                'dx': msg.objects.data[9],
+                'dy': msg.objects.data[10],
+                'width': msg.objects.data[1],
+                'height': msg.objects.data[2]
+            }
+        if self.object_available_to_mark(id):
+            self.get_logger().info(f"New object detected: {id}")
+            self.get_logger().info(f"Object position in image: ({object_info['dx']}, {object_info['dy']})")
+            self.rotate_to_center_object(object_info)
+            # self.mark_object(msg)
 
     def object_available_to_mark(self, object_id):
-        if object_id not in self.marked_objects and object_id in markers:
+        if id == -1:
+            return False
+        if not (object_id in self.marked_objects) and (object_id in markers):
             return True
-        return False  # Simplified for example
+        return False 
 
-    def rotate_to_center_object(self, msg):
+    def rotate_to_center_object(self, object):
+        object_center_x = (object['dx'] + object['width']) / 2
         # Command robot to rotate so that the object is centered
-        twist_msg = Twist()
-        twist_msg.angular.z = 1.0  # Simplified rotation command
-        self.publisher.publish(twist_msg)
-        # You would include logic to stop rotation based on image position
 
-    def mark_object(self, msg):
-        # Record the object's position
-        try:
-            trans = self.tf_buffer.lookup_transform('map', 'camera', rclpy.time.Time())
-            self.get_logger().info(f"Object {msg.id} is at {trans.transform.translation}")
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-            self.get_logger().error(f"TF error: {e}")
+        k = 0.005  
+        error_x = 320 - object_center_x # 
+
+        twist_msg = Twist()
+        if abs(error_x) > 5:  
+            twist_msg.angular.z = k * error_x  
+        else:
+            twist_msg.angular.z = 0.0  
+
+        self.publisher.publish(twist_msg)
+        if twist_msg.angular.z == 0.0:
+            self.align_complete = True  
+        else:
+            self.align_complete = False
+
+    def mark_object(self):
+    #     TODO: Use laser sensor to detect the distence and tf to odom, then add marker into marked_objects
+        pass
+
 
 def main(args=None):
     rclpy.init(args=args)
     node = ImageLocalizer()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        rclpy.shutdown()
+        print("Shutdown")
+
 
 if __name__ == '__main__':
     main()

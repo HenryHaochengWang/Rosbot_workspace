@@ -1,3 +1,4 @@
 [console_scripts]
+image_localizer = my_pkg.image_localizer:main
 rotate_robot = my_pkg.rotate_robot:main
 
